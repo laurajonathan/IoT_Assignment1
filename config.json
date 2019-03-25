@@ -1,0 +1,6 @@
+{
+    "min_temperature": 0,
+    "max_tempetature": 100,
+    "min_humidity": 0,
+    "min_humidity": 100
+}
