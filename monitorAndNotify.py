@@ -54,11 +54,11 @@ class Database:
         self.__execute_query(query, *attributes)
         return "Success!"
 
-    def read_data(self, *attributes):
+    def read_data(self):
         query = """
             SELECT temp, humid, timestamp FROM data
         """
-        return self.__execute_query(query, *attributes)
+        return self.__execute_query(query)
 
     def __del__(self):
         self.__connection.close()
@@ -74,6 +74,7 @@ def main():
     database.read_data()
     del data
     del database
+
 
 if __name__ == "__main__":
     main()
