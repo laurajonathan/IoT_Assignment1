@@ -13,53 +13,55 @@ from virtual_sense_hat import VirtualSenseHat
 
 
 class Data:
-    """Data class for reading the data from sense hat sensor
-    """
+    """Data class for reading the data from sense hat sensor"""
 
     def __init__(self, sense_hat):
-        self._sense_hat = sense_hat
-        self._temperature = 0
-        self._humidity = 0
-        self._timestamp = datetime.datetime.now()
+        self.__sense_hat = sense_hat
+        self.__temperature = 0
+        self.__humidity = 0
+        self.__timestamp = datetime.datetime.now()
 
     def read_data(self):
-        self._temperature = self._sense_hat.get_temperature()
-        self._humidity = self._sense_hat.get_humidity()
-        self._timestamp = datetime.datetime.now()
+        self.__temperature = self.__sense_hat.get_temperature()
+        self.__humidity = self.__sense_hat.get_humidity()
+        self.__timestamp = datetime.datetime.now()
 
     def get_data(self):
-        return self._temperature, self._humidity, self._timestamp
+        return self.__temperature, self.__humidity, self.__timestamp
+
+    def __def__(self):
+        pass
 
 
-def connect_to_database():
-    return MySQLdb.connect("localhost", "root", "suwat513", "Assignment1")
+class Database:
+    """Database class for all database operations"""
 
+    def __init__(self):
+        self.__connection = MySQLdb.connect(
+            "localhost", "root", "suwat513", "Assignment1")
 
-def insert_data_into_database(temp, humid, timestamp):
-    connection = connect_to_database()
-    with connection.cursor() as cursor:
-        cursor.execute("""
-                       INSERT INTO data (temp, humid, timestamp)
-                       VALUES (%s, %s, %s)""",
-                       (temp, humid, timestamp))
-    connection.commit()
-    connection.close()
+    def __execute_query(self, query, *attributes):
+        with self.__connection.cursor() as cursor:
+            cursor.execute(query, attributes)
+            result = cursor.fetchall()
+        self.__connection.commit()
+        return result
 
+    def insert_data(self, *attributes):
+        query = """
+            INSERT INTO data (temp, humid, timestamp) VALUES (%s, %s, %s)
+        """
+        self.__execute_query(query, *attributes)
+        return "Success!"
 
-def read_data_from_database():
-    connection = connect_to_database()
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT temp, humid, timestamp FROM data")
-        print("{:15} {:15} {:15}".format("Temp", "Humid", "Timestamp"))
-        print("===========================================================")
+    def read_data(self, *attributes):
+        query = """
+            SELECT temp, humid, timestamp FROM data
+        """
+        return self.__execute_query(query, *attributes)
 
-        for reading in cursor.fetchall():
-            print("{:15} {:15} {:15}".format(
-                str(reading[0]),
-                str(reading[1]),
-                str(reading[2])))
-
-    connection.close()
+    def __del__(self):
+        self.__connection.close()
 
 
 def main():
@@ -67,9 +69,11 @@ def main():
     data = Data(sense)
     data.read_data()
     temp, humid, timestamp = data.get_data()
-    insert_data_into_database(temp, humid, timestamp)
-    read_data_from_database()
-
+    database = Database()
+    database.insert_data(temp, humid, timestamp)
+    database.read_data()
+    del data
+    del database
 
 if __name__ == "__main__":
     main()
