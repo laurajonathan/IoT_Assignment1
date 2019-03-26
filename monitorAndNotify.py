@@ -38,7 +38,7 @@ class Database:
 
     def __init__(self):
         self.__connection = MySQLdb.connect(
-            "localhost", "root", "suwat513", "Assignment1")
+            "localhost", "pi", "suwat513", "Assignment1")
 
     def __execute_query(self, query, *attributes):
         with self.__connection.cursor() as cursor:
