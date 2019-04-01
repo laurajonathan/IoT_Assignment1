@@ -15,6 +15,7 @@ from virtual_sense_hat import VirtualSenseHat
 
 CONFIG_FILE = "config.json"
 API_KEY = "o.cYDH4cl2j2C1DA5Wxt4vPZi4pS7eMR9V"
+MAX_NOTIFICATION_PER_DAY = 1
 
 
 class Data:
@@ -61,7 +62,7 @@ class Database:
         return result
 
     @classmethod
-    def __validation(cls, *attributes):
+    def __validate_data(cls, *attributes):
         """Validate the type of the data before insert into database"""
         for attr in attributes[:-1]:
             if not isinstance(attr, float):
@@ -78,7 +79,7 @@ class Database:
         query = """
             INSERT INTO data (temp, humid, timestamp) VALUES (%s, %s, %s)
         """
-        if self.__validation(*attributes):
+        if self.__validate_data(*attributes):
             self.__execute_query(query, *attributes)
 
     def read_data(self):
@@ -89,6 +90,46 @@ class Database:
             SELECT temp, humid, timestamp FROM data
         """
         return self.__execute_query(query)
+
+    @classmethod
+    def __validate_notification(cls, *attributes):
+        """Validate the type of the notification before insert into database"""
+        for attr in attributes[:-1]:
+            if not isinstance(attr, str):
+                return False
+        if not isinstance(attributes[-1], datetime.datetime):
+            return False
+        return True
+
+    def insert_notification(self, *attributes):
+        """
+        Validate the notification and prevent SQL Injection attack with
+        parametrised query then insert notification into database
+        """
+        query = """
+            INSERT INTO notification (title, body, timestamp)
+            VALUES (%s, %s, %s)
+        """
+        if self.__validate_notification(*attributes):
+            self.__execute_query(query, *attributes)
+
+    def read_notification(self, max_notification_per_day):
+        """
+        Read notification from the database with pre-defined query
+        and return False if the max_notification_per_day reached
+        """
+        query = """
+            SELECT timestamp FROM notification
+        """
+        result = self.__execute_query(query)
+        today = datetime.datetime.today().date()
+        count = 0
+        for _r in result:
+            if _r[0].date() == today:
+                count += 1
+        if count >= max_notification_per_day:
+            return False
+        return True
 
     def __del__(self):
         self.__connection.close()
@@ -118,7 +159,6 @@ class Notification:
             "title": title,
             "body": body
         }
-
         resp = requests.post(
             "https://api.pushbullet.com/v2/pushes",
             data=json.dumps(data_send),
@@ -127,7 +167,6 @@ class Notification:
                 "Content-Type": "application/json"
             }
         )
-
         if resp.status_code != 200:
             raise Exception("Something wrong")
         else:
@@ -145,6 +184,8 @@ def main():
     database = Database()
     database.insert_data(temp, humid, timestamp)
     database.read_data()
+    #database.insert_notification("title test", "body test", datetime.datetime.now())
+    print(database.read_notification(2))
     del data
     del database
 
