@@ -15,7 +15,7 @@ from virtual_sense_hat import VirtualSenseHat
 
 CONFIG_FILE = "config.json"
 API_KEY = "o.cYDH4cl2j2C1DA5Wxt4vPZi4pS7eMR9V"
-MAX_NOTIFICATION_PER_DAY = 100
+MAX_NOTIFICATION_PER_DAY = 1
 TITLE = "Send from Raspberry Pi! (Data Out Of Range)"
 
 
@@ -39,18 +39,22 @@ class Data:
         Read the temperature and humidity from sense hat sensor
         with current timestamp
         """
-        return (self.__sense_hat.get_temperature(),
-                self.__sense_hat.get_humidity(),
-                datetime.datetime.now())
+        return (
+            self.__sense_hat.get_temperature(),
+            self.__sense_hat.get_humidity(),
+            datetime.datetime.now()
+        )
 
     def read_config(self):
         """
         Read the config
         """
-        return (self.__temp_min,
-                self.__temp_max,
-                self.__humid_min,
-                self.__humid_max)
+        return (
+            self.__temp_min,
+            self.__temp_max,
+            self.__humid_min,
+            self.__humid_max
+        )
 
     def data_out_of_range(self, temp, humid):
         """
@@ -72,7 +76,7 @@ class Database:
 
     def __init__(self):
         self.__connection = MySQLdb.connect(
-            "localhost", "root", "suwat513", "Assignment1")
+            "localhost", "pi", "suwat513", "Assignment1")
 
     def __execute_query(self, query, *attributes):
         """Execute query"""
@@ -161,8 +165,13 @@ class Notification:
 
     def __init__(self, access_token):
         self.__access_token = access_token
+        self.__title = "Default Title"
+        self.__body = "Default Body"
 
     def set_message(self, title, temp, humid, *config):
+        """
+        Setter for the title and body of the message for notification
+        """
         self.__title = title
         self.__body = """
             Valid data in setting is:\n
@@ -175,14 +184,18 @@ class Notification:
                 temperature = {}\n
                 humidity = {}\n
         """.format(
-                config[0],
-                config[1],
-                config[2],
-                config[3],
-                temp,
-                humid)
+            config[0],
+            config[1],
+            config[2],
+            config[3],
+            temp,
+            humid
+        )
 
     def get_message(self):
+        """
+        Getter for title and body
+        """
         return self.__title, self.__body
 
     def send_notification(self):
@@ -214,28 +227,39 @@ def main():
     """
     Main Method
     """
+    # Initialization
     sense = VirtualSenseHat.getSenseHat()
     data = Data(sense, CONFIG_FILE)
     database = Database()
     notification = Notification(API_KEY)
 
+    # Read temp and humid from sense hat sensor
     temp, humid, timestamp = data.read_data()
 
+    # Insert data into database
     database.insert_data(temp, humid, timestamp)
 
     # Get the newest data from the database
     temp, humid, timestamp = database.read_data()[-1]
 
+    # Construct the notification message
     notification.set_message(TITLE, temp, humid, *data.read_config())
 
+    # Check if the data is out of config_file range and limit is not reached
     if (data.data_out_of_range(temp, humid)
             and database.read_notification(MAX_NOTIFICATION_PER_DAY)):
+        # Send notification
         notification.send_notification()
+        # Get notification message
         title, body = notification.get_message()
+        # Insert a record of notification sent
         database.insert_notification(title, body, datetime.datetime.now())
 
+    # Clear all object
+    del sense
     del data
     del database
+    del notification
 
 
 if __name__ == "__main__":
