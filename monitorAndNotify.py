@@ -15,7 +15,8 @@ from virtual_sense_hat import VirtualSenseHat
 
 CONFIG_FILE = "config.json"
 API_KEY = "o.cYDH4cl2j2C1DA5Wxt4vPZi4pS7eMR9V"
-MAX_NOTIFICATION_PER_DAY = 1
+MAX_NOTIFICATION_PER_DAY = 100
+TITLE = "Send from Raspberry Pi! (Data Out Of Range)"
 
 
 class Data:
@@ -28,21 +29,39 @@ class Data:
         with open(config_file) as json_file:
             self.__config = json.load(json_file)
         self.__sense_hat = sense_hat
+        self.__temp_min = self.__config['min_temperature']
+        self.__temp_max = self.__config['max_tempetature']
+        self.__humid_min = self.__config['min_humidity']
+        self.__humid_max = self.__config['max_humidity']
 
     def read_data(self):
         """
         Read the temperature and humidity from sense hat sensor
         with current timestamp
         """
-        return self.__sense_hat.get_temperature(),
-        self.__sense_hat.get_humidity(),
-        datetime.datetime.now()
+        return (self.__sense_hat.get_temperature(),
+                self.__sense_hat.get_humidity(),
+                datetime.datetime.now())
 
-    def validate_data(self):
+    def read_config(self):
         """
-        Check if temp and humid is in the valid data range
+        Read the config
         """
-        return True
+        return (self.__temp_min,
+                self.__temp_max,
+                self.__humid_min,
+                self.__humid_max)
+
+    def data_out_of_range(self, temp, humid):
+        """
+        Check if temp and humid is out of the valid data range
+        """
+        if (temp < self.__temp_min
+                or temp > self.__temp_max
+                or humid < self.__humid_min
+                or humid > self.__humid_max):
+            return True
+        return False
 
     def __def__(self):
         pass
@@ -143,7 +162,30 @@ class Notification:
     def __init__(self, access_token):
         self.__access_token = access_token
 
-    def send_notification_via_pushbullet(self, title, body):
+    def set_message(self, title, temp, humid, *config):
+        self.__title = title
+        self.__body = """
+            Valid data in setting is:\n
+                temperature min = {}\n
+                temperature max = {}\n
+                humidity min = {}\n
+                humidity max = {}\n
+                \n
+            Actual value is:\n
+                temperature = {}\n
+                humidity = {}\n
+        """.format(
+                config[0],
+                config[1],
+                config[2],
+                config[3],
+                temp,
+                humid)
+
+    def get_message(self):
+        return self.__title, self.__body
+
+    def send_notification(self):
         """ Sending notification via pushbullet.
             Args:
                 title (str) : title of text.
@@ -151,8 +193,8 @@ class Notification:
         """
         data_send = {
             "type": "note",
-            "title": title,
-            "body": body
+            "title": self.__title,
+            "body": self.__body
         }
         resp = requests.post(
             "https://api.pushbullet.com/v2/pushes",
@@ -174,12 +216,24 @@ def main():
     """
     sense = VirtualSenseHat.getSenseHat()
     data = Data(sense, CONFIG_FILE)
-    temp, humid, timestamp = data.read_data()
     database = Database()
+    notification = Notification(API_KEY)
+
+    temp, humid, timestamp = data.read_data()
+
     database.insert_data(temp, humid, timestamp)
-    temp, humid, timestamp = database.read_data()
-    #database.insert_notification("title test", "body test", datetime.datetime.now())
-    print(database.read_notification(2))
+
+    # Get the newest data from the database
+    temp, humid, timestamp = database.read_data()[-1]
+
+    notification.set_message(TITLE, temp, humid, *data.read_config())
+
+    if (data.data_out_of_range(temp, humid)
+            and database.read_notification(MAX_NOTIFICATION_PER_DAY)):
+        notification.send_notification()
+        title, body = notification.get_message()
+        database.insert_notification(title, body, datetime.datetime.now())
+
     del data
     del database
 
