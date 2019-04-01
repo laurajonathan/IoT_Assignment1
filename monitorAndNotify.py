@@ -8,8 +8,8 @@ This script is intended to update the temperature and humidity every minutes.
 """
 
 import datetime
-import requests
 import json
+import requests
 import MySQLdb
 from virtual_sense_hat import VirtualSenseHat
 
@@ -19,28 +19,30 @@ MAX_NOTIFICATION_PER_DAY = 1
 
 
 class Data:
-    """Data class for reading the data from sense hat sensor"""
+    """
+    Data class for reading the data from sense hat sensor and
+    read the config file for the valid range in each type of data
+    """
 
-    def __init__(self, sense_hat):
+    def __init__(self, sense_hat, config_file):
+        with open(config_file) as json_file:
+            self.__config = json.load(json_file)
         self.__sense_hat = sense_hat
-        self.__temperature = 0
-        self.__humidity = 0
-        self.__timestamp = datetime.datetime.now()
 
     def read_data(self):
         """
         Read the temperature and humidity from sense hat sensor
         with current timestamp
         """
-        self.__temperature = self.__sense_hat.get_temperature()
-        self.__humidity = self.__sense_hat.get_humidity()
-        self.__timestamp = datetime.datetime.now()
+        return self.__sense_hat.get_temperature(),
+        self.__sense_hat.get_humidity(),
+        datetime.datetime.now()
 
-    def get_data(self):
+    def validate_data(self):
         """
-        Return the data with format: temp, humid, timestamp
+        Check if temp and humid is in the valid data range
         """
-        return self.__temperature, self.__humidity, self.__timestamp
+        return True
 
     def __def__(self):
         pass
@@ -141,13 +143,6 @@ class Notification:
     def __init__(self, access_token):
         self.__access_token = access_token
 
-    def read_config(self, config_file):
-        """
-        Read config data from config file
-        """
-        with open(config_file) as json_file:
-            self.__config = json.load(json_file)
-
     def send_notification_via_pushbullet(self, title, body):
         """ Sending notification via pushbullet.
             Args:
@@ -178,12 +173,11 @@ def main():
     Main Method
     """
     sense = VirtualSenseHat.getSenseHat()
-    data = Data(sense)
-    data.read_data()
-    temp, humid, timestamp = data.get_data()
+    data = Data(sense, CONFIG_FILE)
+    temp, humid, timestamp = data.read_data()
     database = Database()
     database.insert_data(temp, humid, timestamp)
-    database.read_data()
+    temp, humid, timestamp = database.read_data()
     #database.insert_notification("title test", "body test", datetime.datetime.now())
     print(database.read_notification(2))
     del data
