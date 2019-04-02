@@ -86,6 +86,7 @@ def main():
     database = Database()
     report = Report(data)
 
+    print("Generating Report...")
     # Generate Report data
     report_data = []
     for temp, humid, timestamp in database.read_data():
@@ -98,8 +99,13 @@ def main():
 
     # Save report data
     report.save_report_data(report_data)
+    # Ask for user input
+    report_name = input("Input report name(empty to use default name): ")
     # Write to csv
-    report.to_csv()
+    if report_name:
+        report.to_csv(report_name)
+    else:
+        report.to_csv()
 
 
 if __name__ == "__main__":
