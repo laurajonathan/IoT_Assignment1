@@ -182,7 +182,7 @@ class Notification:
         self.__title = "Default Title"
         self.__body = "Default Body"
 
-    def set_message(self, temp, humid, *config, title=TITLE):
+    def set_message(self, data, *config, title=TITLE):
         """
         Setter for the title and body of the message for notification
         if the config data is included reply temp and humid with config
@@ -200,22 +200,26 @@ class Notification:
                 Actual value is:\n
                     temperature = {}\n
                     humidity = {}\n
+                    timestamp = {}\n
             """.format(
                 config[0],
                 config[1],
                 config[2],
                 config[3],
-                temp,
-                humid
+                data[0],
+                data[1],
+                data[2]
             )
         else:
             self.__body = """
                 Current value is:\n
                     temperature = {}\n
                     humidity = {}\n
+                    timestamp = {}\n
             """.format(
-                temp,
-                humid
+                data[0],
+                data[1],
+                data[2]
             )
 
     def get_message(self):
@@ -245,8 +249,7 @@ class Notification:
         )
         if resp.status_code != 200:
             raise Exception("Something wrong")
-        else:
-            print("complete sending")
+        print("complete sending")
 
 
 def main():
@@ -262,10 +265,14 @@ def main():
     database.insert_data(*data.read_data())
 
     # Get the newest data from the database
-    temp, humid, timestamp = database.read_data()[-1]
+    newest_data = database.read_data()[-1]
 
     # Construct the notification message
-    notification.set_message(temp, humid, *data.read_config())
+    notification.set_message(newest_data, *data.read_config())
+
+    # Extract temperature and humidity from newest data
+    temp = newest_data[0]
+    humid = newest_data[1]
 
     # Check if the data is out of config_file range and limit is not reached
     if (data.data_out_of_range(temp, humid)
