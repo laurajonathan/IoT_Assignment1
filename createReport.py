@@ -10,6 +10,7 @@ This script is intended to create csv file
 import csv
 from monitorAndNotify import Data
 from monitorAndNotify import Database
+<<<<<<< HEAD
 from virtual_sense_hat import VirtualSenseHat
 
 CONFIG_FILE = "config.json"
@@ -59,11 +60,29 @@ class CSV(object):
         """
         date = date.strftime('%d/%m/%Y')
         return date
+=======
+
+class Report:
+    """Report class for creating csv file from database"""
+    database = Database()
+    temp, humid, timestamp = database.read_data()
+
+    def __init__(self):
+        self.__dataread = self.database.read_data()
+        #self.__dataread = 21.0, 50.0, datetime.datetime.now()
+
+    def check_status(self):
+        self.__status = status
+        for d in __dataread:
+            print(d)
+            
+>>>>>>> master
 
 def main():
     """
     Main Method
     """
+<<<<<<< HEAD
     database = Database()
     sense = VirtualSenseHat.getSenseHat()
     data = Data(sense, CONFIG_FILE)
@@ -93,3 +112,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+=======
+    report = Report()
+    report.check_status
+>>>>>>> master
