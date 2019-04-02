@@ -13,8 +13,8 @@ import requests
 import MySQLdb
 from virtual_sense_hat import VirtualSenseHat
 
-CONFIG_FILE = "config.json"
 API_KEY = "o.cYDH4cl2j2C1DA5Wxt4vPZi4pS7eMR9V"
+CONFIG_FILE = "config.json"
 MAX_NOTIFICATION_PER_DAY = 1
 TITLE = "Send from Raspberry Pi! (Data Out Of Range)"
 
@@ -25,7 +25,9 @@ class Data:
     read the config file for the valid range in each type of data
     """
 
-    def __init__(self, sense_hat, config_file):
+    def __init__(self,
+                 sense_hat=VirtualSenseHat.getSenseHat(),
+                 config_file=CONFIG_FILE):
         with open(config_file) as json_file:
             self.__config = json.load(json_file)
         self.__sense_hat = sense_hat
@@ -72,14 +74,19 @@ class Data:
 
 
 class Database:
-    """Database class for all database operations"""
+    """
+    Database class for all database operations
+    """
 
     def __init__(self):
         self.__connection = MySQLdb.connect(
-            "localhost", "pi", "suwat513", "Assignment1")
+            "localhost", "pi", "suwat513", "Assignment1"
+        )
 
     def __execute_query(self, query, *attributes):
-        """Execute query"""
+        """
+        Execute query
+        """
         with self.__connection.cursor() as cursor:
             cursor.execute(query, attributes)
             result = cursor.fetchall()
@@ -88,7 +95,9 @@ class Database:
 
     @classmethod
     def __validate_data(cls, *attributes):
-        """Validate the type of the data before insert into database"""
+        """
+        Validate the type of the data before insert into database
+        """
         for attr in attributes[:-1]:
             if not isinstance(attr, float):
                 return False
@@ -118,7 +127,9 @@ class Database:
 
     @classmethod
     def __validate_notification(cls, *attributes):
-        """Validate the type of the notification before insert into database"""
+        """
+        Validate the type of the notification before insert into database
+        """
         for attr in attributes[:-1]:
             if not isinstance(attr, str):
                 return False
@@ -138,7 +149,8 @@ class Database:
         if self.__validate_notification(*attributes):
             self.__execute_query(query, *attributes)
 
-    def read_notification(self, max_notification_per_day):
+    def read_notification(self,
+                          max_notification_per_day=MAX_NOTIFICATION_PER_DAY):
         """
         Read notification from the database with pre-defined query
         and return False if the max_notification_per_day reached
@@ -161,36 +173,50 @@ class Database:
 
 
 class Notification:
-    """Notify user via Pushbullet if the data is out of config_file range"""
+    """
+    Notify user via Pushbullet if the data is out of config_file range
+    """
 
-    def __init__(self, access_token):
+    def __init__(self, access_token=API_KEY):
         self.__access_token = access_token
         self.__title = "Default Title"
         self.__body = "Default Body"
 
-    def set_message(self, title, temp, humid, *config):
+    def set_message(self, temp, humid, *config, title=TITLE):
         """
         Setter for the title and body of the message for notification
+        if the config data is included reply temp and humid with config
+        else reply temp and humid
         """
         self.__title = title
-        self.__body = """
-            Valid data in setting is:\n
-                temperature min = {}\n
-                temperature max = {}\n
-                humidity min = {}\n
-                humidity max = {}\n
-                \n
-            Actual value is:\n
-                temperature = {}\n
-                humidity = {}\n
-        """.format(
-            config[0],
-            config[1],
-            config[2],
-            config[3],
-            temp,
-            humid
-        )
+        if config:
+            self.__body = """
+                Valid data in setting is:\n
+                    temperature min = {}\n
+                    temperature max = {}\n
+                    humidity min = {}\n
+                    humidity max = {}\n
+                    \n
+                Actual value is:\n
+                    temperature = {}\n
+                    humidity = {}\n
+            """.format(
+                config[0],
+                config[1],
+                config[2],
+                config[3],
+                temp,
+                humid
+            )
+        else:
+            self.__body = """
+                Current value is:\n
+                    temperature = {}\n
+                    humidity = {}\n
+            """.format(
+                temp,
+                humid
+            )
 
     def get_message(self):
         """
@@ -228,10 +254,9 @@ def main():
     Main Method
     """
     # Initialization
-    sense = VirtualSenseHat.getSenseHat()
-    data = Data(sense, CONFIG_FILE)
+    data = Data()
     database = Database()
-    notification = Notification(API_KEY)
+    notification = Notification()
 
     # Read temp and humid from sense hat sensor
     temp, humid, timestamp = data.read_data()
@@ -243,11 +268,11 @@ def main():
     temp, humid, timestamp = database.read_data()[-1]
 
     # Construct the notification message
-    notification.set_message(TITLE, temp, humid, *data.read_config())
+    notification.set_message(temp, humid, *data.read_config())
 
     # Check if the data is out of config_file range and limit is not reached
     if (data.data_out_of_range(temp, humid)
-            and database.read_notification(MAX_NOTIFICATION_PER_DAY)):
+            and database.read_notification()):
         # Send notification
         notification.send_notification()
         # Get notification message
@@ -256,7 +281,6 @@ def main():
         database.insert_notification(title, body, datetime.datetime.now())
 
     # Clear all object
-    del sense
     del data
     del database
     del notification
