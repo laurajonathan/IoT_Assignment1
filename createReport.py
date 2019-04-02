@@ -51,13 +51,7 @@ def main():
         for data in csvdata:
             writer.writerow(data)
     csvfile.close()
-    
-    
 
-
-    
-
-    
 
 if __name__ == "__main__":
     main()
