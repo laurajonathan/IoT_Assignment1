@@ -258,11 +258,8 @@ def main():
     database = Database()
     notification = Notification()
 
-    # Read temp and humid from sense hat sensor
-    temp, humid, timestamp = data.read_data()
-
-    # Insert data into database
-    database.insert_data(temp, humid, timestamp)
+    # Read temp and humid from sense hat sensor and Insert data into database
+    database.insert_data(*data.read_data())
 
     # Get the newest data from the database
     temp, humid, timestamp = database.read_data()[-1]
