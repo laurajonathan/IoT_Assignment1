@@ -10,86 +10,97 @@ This script is intended to create csv file
 import csv
 from monitorAndNotify import Data
 from monitorAndNotify import Database
-from virtual_sense_hat import VirtualSenseHat
 
-CONFIG_FILE = "config.json"
+REPORT_NAME = "report.csv"
 
-class CSV(object):
+
+class Report(object):
     """
-    CSV class for writing csv file containing date and status
+    Report class for creating report
     """
 
     def __init__(self, data):
         self.__data = data
+        self.__report_data = []
 
-    def set_status(self, temp, humid):
+    @classmethod
+    def __diff(cls, data, config):
         """
-        Set status on the temperature and humidity
+        Return difference between two data with 1 decimal places
+        """
+        return round(abs(data - config), 1)
+
+    def generate_status(self, temp, humid):
+        """
+        Generate status of temperature and humidity
         """
         temp_min, temp_max, humid_min, humid_max = self.__data.read_config()
 
-        if self.__data.data_out_of_range(temp, humid):
+        if not self.__data.data_out_of_range(temp, humid):
             status = "OK"
         else:
+            status = "BAD:"
             if temp < temp_min:
-                status = "BAD: %s below minimum temperature" %round((temp_min-temp), 1)
-            if temp > temp_max:
-                status = "BAD: %s over maximum temperature" %round((temp-temp_max), 1)
-            if temp < humid_min:
-                status = "BAD: %s below minimum humidity" %round((humid_min-humid), 1)
-            if temp < humid_max:
-                status = "BAD: %s over maximum humidity" %round((humid-humid_max), 1)
+                status += " %s *C below minimum temperature" \
+                    % self.__diff(temp, temp_min)
+            elif temp > temp_max:
+                status += " %s *C over maximum temperature" \
+                    % self.__diff(temp, temp_max)
+            if humid < humid_min:
+                if status[-1] != ":":
+                    status += " and"
+                status += " %s %% below minimum humidity" \
+                    % self.__diff(humid, humid_min)
+            elif humid < humid_max:
+                if status[-1] != ":":
+                    status += " and"
+                status += " %s %% over maximum humidity" \
+                    % self.__diff(humid, humid_max)
         return status
 
-    def create_csvfile(self, csv_data):
+    def save_report_data(self, report_data):
         """
-        Create csvfile
+        Store report_data inside a private variable __report_data
         """
-        with open("report.csv", "w", newline='') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_ALL)
+        self.__report_data = report_data
+
+    def to_csv(self, report_name=REPORT_NAME):
+        """
+        Write data to csv file
+        """
+        with open(report_name, "w", newline='') as report:
+            writer = csv.writer(report, delimiter=',', quoting=csv.QUOTE_ALL)
             header = ['Date', 'Status']
             writer.writerow(header)
-            for data in csv_data:
+            for data in self.__report_data:
                 writer.writerow(data)
-        csvfile.close()
+        report.close()
 
-    def format_date(self, date):
-        """
-        Formatting date to dd/mm/yy
-        """
-        date = date.strftime('%d/%m/%Y')
-        return date
 
 def main():
     """
     Main Method
     """
+    # Initialization
+    data = Data()
     database = Database()
-    sense = VirtualSenseHat.getSenseHat()
-    data = Data(sense, CONFIG_FILE)
-    csv_report = CSV(data)
+    report = Report(data)
 
-    result = []
-    for temp_data in database.read_data():
-        result.append([temp_data[0], temp_data[1], temp_data[2]])
+    # Generate Report data
+    report_data = []
+    for temp, humid, timestamp in database.read_data():
+        # Get status
+        status = report.generate_status(temp, humid)
+        # Set data in each row
+        row = [timestamp.strftime('%d/%m/%Y'), status]
+        # Append row
+        report_data.append(row)
 
-    csv_data = []
-    print(result)
+    # Save report data
+    report.save_report_data(report_data)
+    # Write to csv
+    report.to_csv()
 
-    for temp_result in result:
-        date = temp_result[2]
-        format_date = csv_report.format_date(date)
-        #print(format_date)
-
-        temp = temp_result[0]
-        humid = temp_result[1]
-        setting_status = csv_report.set_status(temp, humid)
-        #print(setting_status)
-
-        csv_data.append([format_date, setting_status])
-        print(csv_data)
-
-    csv_report.create_csvfile(csv_data)
 
 if __name__ == "__main__":
     main()
