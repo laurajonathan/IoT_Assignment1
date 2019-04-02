@@ -1,2 +1,4 @@
-"['Date', 'Status']"
-"['09/03/2019', 'OK']","['22/03/2019', 'BAD']","['30/03/2019', 'OK']","['24/03/2019', 'BAD']"
+"Date","Status"
+"01/04/2019","BAD: -45.3 over maximum humidity"
+"01/04/2019","BAD: -44.7 over maximum humidity"
+"01/04/2019","BAD: -48.4 over maximum humidity"
