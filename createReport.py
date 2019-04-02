@@ -7,6 +7,7 @@ This script is intended to create csv file
 
 """
 
+import re
 import csv
 from monitorAndNotify import Data
 from monitorAndNotify import Database
@@ -99,10 +100,14 @@ def main():
 
     # Save report data
     report.save_report_data(report_data)
+
     # Ask for user input
     report_name = input("Input report name(empty to use default name): ")
+
+    # File name validation with regex
+    pattern = re.compile(r"[\w]+(.csv)$")
     # Write to csv
-    if report_name:
+    if pattern.match(report_name):
         report.to_csv(report_name)
     else:
         report.to_csv()
