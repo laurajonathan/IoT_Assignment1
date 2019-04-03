@@ -19,7 +19,7 @@ MAX_NOTIFICATION_PER_DAY = 1
 TITLE = "Send from Raspberry Pi! (Data Out Of Range)"
 
 
-class Data(object):
+class Data:
     """
     Data class for reading the data from sense hat sensor and
     read the config file for the valid range in each type of data
@@ -73,7 +73,7 @@ class Data(object):
         pass
 
 
-class Database(object):
+class Database:
     """
     Database class for all database operations
     """
@@ -172,7 +172,7 @@ class Database(object):
         self.__connection.close()
 
 
-class Notification(object):
+class Notification:
     """
     Notify user via Pushbullet if the data is out of config_file range
     """
