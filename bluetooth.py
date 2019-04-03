@@ -16,7 +16,7 @@ from monitorAndNotify import Notification
 DELAY = 5
 
 
-class Bluetooth:
+class Bluetooth(object):
     """
     Bluetooth class to detect the nearby bluetooth device and
     send the message via Pushbullet when a device is connected
