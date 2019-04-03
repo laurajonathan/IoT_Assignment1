@@ -52,7 +52,7 @@ class Report(object):
                     status += " and"
                 status += " %s %% below minimum humidity" \
                     % self.__diff(humid, humid_min)
-            elif humid < humid_max:
+            elif humid > humid_max:
                 if status[-1] != ":":
                     status += " and"
                 status += " %s %% over maximum humidity" \
