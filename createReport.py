@@ -15,7 +15,7 @@ from monitorAndNotify import Database
 REPORT_NAME = "report.csv"
 
 
-class Report(object):
+class Report:
     """
     Report class for creating report
     """
