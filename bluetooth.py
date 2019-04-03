@@ -12,6 +12,7 @@ import subprocess as sp
 import bluetooth as bt
 from monitorAndNotify import Data
 from monitorAndNotify import Notification
+from createReport import Report
 
 DELAY = 5
 
@@ -86,6 +87,7 @@ def main():
     bluetooth = Bluetooth()
     data = Data()
     notification = Notification()
+    report = Report(data)
 
     while True:
         # Scan nearby device
@@ -97,13 +99,24 @@ def main():
         for device in bluetooth.get_nearby_paired_devices():
             # Set notification title
             title = "Device %s is nearby send real time data" % device
+            # Get current data
+            current_data = data.read_data()
+            # Generate status
+            status = report.generate_status(current_data[0], current_data[1])
+            # Set message
+            message = current_data + (status,)
             # Set notification message with current data
-            notification.set_message(data.read_data(), title=title)
+            notification.set_message(message, title=title)
             # Send notification
             notification.send_notification()
 
         # Delay before the next scan
         time.sleep(DELAY)
+
+    # Clear all object
+    del bluetooth
+    del data
+    del notification
 
 
 if __name__ == "__main__":

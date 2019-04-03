@@ -15,7 +15,8 @@ from virtual_sense_hat import VirtualSenseHat
 
 API_KEY = "o.cYDH4cl2j2C1DA5Wxt4vPZi4pS7eMR9V"
 CONFIG_FILE = "config.json"
-MAX_NOTIFICATION_PER_DAY = 1
+MAX_BAD_ITEM = 10
+MAX_NOTIFICATION_PER_DAY = 10
 TITLE = "Send from Raspberry Pi! (Data Out Of Range)"
 
 
@@ -69,8 +70,28 @@ class Data:
             return True
         return False
 
-    def __def__(self):
-        pass
+    @classmethod
+    def diff(cls, data, config):
+        """
+        Return difference between two data with 1 decimal places
+        """
+        return round(abs(data - config), 1)
+
+    def cal_out_of_range(self, temp, humid):
+        """
+        Calculate the difference if the data is out of range
+        else return 0
+        """
+        diff = 0
+        if temp < self.__temp_min:
+            diff += self.diff(temp, self.__temp_min)
+        elif temp > self.__temp_max:
+            diff += self.diff(temp, self.__temp_max)
+        if humid < self.__humid_min:
+            diff += self.diff(humid, self.__humid_min)
+        elif humid > self.__humid_max:
+            diff += self.diff(humid, self.__humid_max)
+        return diff
 
 
 class Database:
@@ -116,13 +137,22 @@ class Database:
         if self.__validate_data(*attributes):
             self.__execute_query(query, *attributes)
 
-    def read_data(self):
+    def read_data(self, today=False):
         """
         Read data from the database with pre-defined query
+        If today is True read the data with timestamp = today
+        else read all data
         """
-        query = """
-            SELECT temp, humid, timestamp FROM data
-        """
+        if today:
+            query = """
+                SELECT temp, humid, timestamp
+                FROM data
+                WHERE timestamp >= CURDATE()
+            """
+        else:
+            query = """
+                SELECT temp, humid, timestamp FROM data
+            """
         return self.__execute_query(query)
 
     @classmethod
@@ -149,8 +179,7 @@ class Database:
         if self.__validate_notification(*attributes):
             self.__execute_query(query, *attributes)
 
-    def read_notification(self,
-                          max_notification_per_day=MAX_NOTIFICATION_PER_DAY):
+    def read_notification(self, max_notification_per_day):
         """
         Read notification from the database with pre-defined query
         and return False if the max_notification_per_day reached
@@ -216,10 +245,12 @@ class Notification:
                     temperature = {}\n
                     humidity = {}\n
                     timestamp = {}\n
+                    status = {}\n
             """.format(
                 data[0],
                 data[1],
-                data[2]
+                data[2],
+                data[3]
             )
 
     def get_message(self):
@@ -264,25 +295,35 @@ def main():
     # Read temp and humid from sense hat sensor and Insert data into database
     database.insert_data(*data.read_data())
 
-    # Get the newest data from the database
-    newest_data = database.read_data()[-1]
+    # Get today data from the database
+    today_data = database.read_data(today=True)
 
-    # Construct the notification message
-    notification.set_message(newest_data, *data.read_config())
+    # Get the worst data from the database and sort it
+    bad_data = []
+    for temp, humid, timestamp in today_data:
+        # Calculate the difference
+        diff = data.cal_out_of_range(temp, humid)
+        # Create tuple of data with diff
+        data_with_diff = (temp, humid, timestamp, diff)
+        # Append to bad_data
+        bad_data.append(data_with_diff)
+    # Sort the bad_data by diff with highest diff as first element
+    bad_data = sorted(bad_data, key=lambda x: x[-1], reverse=True)
 
-    # Extract temperature and humidity from newest data
-    temp = newest_data[0]
-    humid = newest_data[1]
-
-    # Check if the data is out of config_file range and limit is not reached
-    if (data.data_out_of_range(temp, humid)
-            and database.read_notification()):
-        # Send notification
-        notification.send_notification()
-        # Get notification message
-        title, body = notification.get_message()
-        # Insert a record of notification sent
-        database.insert_notification(title, body, datetime.datetime.now())
+    # Set notification limit
+    limit = MAX_NOTIFICATION_PER_DAY * MAX_BAD_ITEM
+    # Check if the notification limit is not reached
+    if database.read_notification(limit):
+        # Send MAX_BAD_ITEM notification from the worst data
+        for bad in bad_data[:MAX_BAD_ITEM]:
+            # Construct the notification message
+            notification.set_message(bad[:-1], *data.read_config())
+            # Send notification
+            notification.send_notification()
+            # Get notification message
+            title, body = notification.get_message()
+            # Insert a record of notification sent
+            database.insert_notification(title, body, datetime.datetime.now())
 
     # Clear all object
     del data

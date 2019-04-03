@@ -6,19 +6,41 @@ Created by Suwat Tangtragoonviwatt (s3710374) and Laura Jonathan (s3696013)
 This script is show data visualization
 
 """
-
-import matplotlib.pyplot as plt
-import csv
-
-with open('report.csv','r') as csvfile:
-    plots = csv.reader(csvfile, delimiter=',')
-
+import plotly
+from plotly.offline import plot
+import plotly.graph_objs as go
+from monitorAndNotify import Database
+import numpy as np
 
 
-sizes = [70, 30]
-labels = ["OK", "BAD"]
+class Analytics:
+    """
+    Analytics Class
+    """
 
-plt.pie(sizes, labels = labels, autopct = "%.2f")
-plt.axes().set_aspect("equal")
-plt.title("Proportion of OK status and bad status")
-plt.show()
+
+def main():
+    """
+    Main Method
+    """
+    # Initialization
+    database = Database()
+    x = []
+    y = []
+    for temp, humid, timestamp in database.read_data():
+        x.append(timestamp)
+        y.append(temp)
+    plotly.offline.init_notebook_mode(connected=True)
+    #x = np.random.randn(500)
+    data = [go.Histogram(x=y)]
+    plotly.offline.plot({
+        "data": data,
+        "layout": go.Layout(title="hello world")
+    }, auto_open=True)
+
+    # Clear all object
+    del database
+
+
+if __name__ == "__main__":
+    main()
