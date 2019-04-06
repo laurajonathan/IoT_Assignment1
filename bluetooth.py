@@ -3,7 +3,8 @@ bluetooth.py
 
 Created by Suwat Tangtragoonviwatt (s3710374) and Laura Jonathan (s3696013)
 
-This script is intended to update the temperature and humidity every minutes.
+This script is intended to send the current value of temperature and
+humidity from sense hat sensor via Pushbullet when a device is connected.
 
 """
 
@@ -101,7 +102,7 @@ def main():
             title = "Device %s is nearby send real time data" % device
             # Get current data
             current_data = data.read_data()
-            # Generate status
+            # Generate status with (temp, humid)
             status = report.generate_status(current_data[0], current_data[1])
             # Set message
             message = current_data + (status,)
