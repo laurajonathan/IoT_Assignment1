@@ -11,9 +11,9 @@ humidity from sense hat sensor via Pushbullet when a device is connected.
 import time
 import subprocess as sp
 import bluetooth as bt
-from monitorAndNotify import Data
-from monitorAndNotify import Notification
-from createReport import Report
+from monitor_and_notify import Data
+from monitor_and_notify import Notification
+from create_report import Report
 
 DELAY = 5
 

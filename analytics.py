@@ -11,8 +11,8 @@ from abc import ABC, abstractmethod
 import plotly
 import plotly.graph_objs as go
 import matplotlib.pyplot as plt
-from monitorAndNotify import Data
-from monitorAndNotify import Database
+from monitor_and_notify import Data
+from monitor_and_notify import Database
 
 
 class Graph(ABC):

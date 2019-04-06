@@ -3,14 +3,14 @@ createReport.py
 
 Created by Suwat Tangtragoonviwatt (s3710374) and Laura Jonathan (s3696013)
 
-This script is intended to create csv file
+This script is intended to create a simple report with csv format
 
 """
 
 import re
 import csv
-from monitorAndNotify import Data
-from monitorAndNotify import Database
+from monitor_and_notify import Data
+from monitor_and_notify import Database
 
 REPORT_NAME = "report.csv"
 

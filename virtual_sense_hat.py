@@ -12,7 +12,6 @@ If sense hat is working correctly this module will return sense hat
 
 """
 
-import logging
 import random
 
 try:
@@ -27,27 +26,39 @@ class VirtualSenseHat:
     """
 
     @staticmethod
-    def getSenseHat(logError=True):
+    def get_sense_hat():
+        """
+        If SenseHat module exist use SenseHat
+        else use VirtualSenseHat
+        """
         try:
             return SenseHat()
-        except Exception as e:
-            if(logError):
-                logging.error("Use VirtualSenseHat because: " + str(e))
+        except NameError:
             return VirtualSenseHat()
 
-    def get_temperature(self, min_value=1000, max_value=3000):
+    @classmethod
+    def get_temperature(cls, min_value=1000, max_value=3000):
+        """
+        Return random temperature in range (10, 30)
+        """
         return random.randint(min_value, max_value) / 100
 
-    def get_humidity(self, min_value=5000, max_value=6000):
+    @classmethod
+    def get_humidity(cls, min_value=5000, max_value=6000):
+        """
+        Return random humidity in range (50, 60)
+        """
         return random.randint(min_value, max_value) / 100
 
-    def show_message(self,
-                     text_string,
-                     scroll_speed=0.1,
-                     text_colour=[255, 255, 255],
-                     back_colour=[0, 0, 0]
-                     ):
+    @classmethod
+    def show_message(cls, text_string):
+        """
+        Print message on the console
+        """
         print(text_string)
 
     def clear(self):
+        """
+        Mimic SenseHat clear
+        """
         pass

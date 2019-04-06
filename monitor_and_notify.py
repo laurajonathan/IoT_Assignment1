@@ -15,8 +15,8 @@ from virtual_sense_hat import VirtualSenseHat
 
 API_KEY = "o.cYDH4cl2j2C1DA5Wxt4vPZi4pS7eMR9V"
 CONFIG_FILE = "config.json"
-MAX_BAD_ITEM = 10
-MAX_NOTIFICATION_PER_DAY = 10
+MAX_BAD_ITEM = 2
+MAX_NOTIFICATION_PER_DAY = 1
 TITLE = "Send from Raspberry Pi! (Data Out Of Range)"
 
 
@@ -27,7 +27,7 @@ class Data:
     """
 
     def __init__(self,
-                 sense_hat=VirtualSenseHat.getSenseHat(),
+                 sense_hat=VirtualSenseHat.get_sense_hat(),
                  config_file=CONFIG_FILE):
         with open(config_file) as json_file:
             self.__config = json.load(json_file)
