@@ -61,4 +61,3 @@ class VirtualSenseHat:
         """
         Mimic SenseHat clear
         """
-        pass

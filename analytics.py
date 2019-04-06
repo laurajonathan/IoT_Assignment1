@@ -29,14 +29,12 @@ class Graph(ABC):
         """
         Data preprocessing or preparation before ploting the graph
         """
-        pass
 
     @abstractmethod
     def generate_graph(self):
         """
         Draw a graph
         """
-        pass
 
 
 class LineGraph(Graph):
