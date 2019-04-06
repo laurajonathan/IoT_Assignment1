@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from monitorAndNotify import Database
 
 
+
 class Analytics:
     """
     Analytics Class
@@ -35,7 +36,7 @@ def main():
         temp_list.append(temp)
     unique_date = sorted(set(timestamp_list))
     x = []
-    y = []
+    y_avg = []
     y_min = []
     y_max = []
     for date in unique_date:
@@ -43,34 +44,43 @@ def main():
         for temp, timestamp in zip(temp_list, timestamp_list):
             if timestamp == date:
                 values.append(temp)
-        value = round(sum(values)/len(values), 1)
+        value_avg = round(sum(values)/len(values), 1)
         value_min = round(min(values), 1)
         value_max = round(max(values), 1)
         x.append(date)
-        y.append(value)
+        y_avg.append(value_avg)
         y_min.append(value_min)
         y_max.append(value_max)
     
     plotly.offline.init_notebook_mode(connected=True)
 
-    trace1 = go.Bar(
+    bar_min = go.Bar(
         x=x,
         y=y_min,
-        name='Min'
+        name='Min',
+        marker=dict(
+            color='rgb(0,0,255)'
+        )
     )
-    trace2 = go.Bar(
+    bar_avg = go.Bar(
+        x=x,
+        y=y_avg,
+        name='Average',
+        marker=dict(
+            color='rgb(0,255,0)'
+        )
+    )
+    
+    bar_max = go.Bar(
         x=x,
         y=y_max,
-        name='Max'
+        name='Max',
+        marker=dict(
+            color='rgb(255,0,0)'
+        )
     )
     
-    trace3 = go.Bar(
-        x=x,
-        y=y,
-        name='Average'
-    )
-    
-    data = [trace1, trace2, trace3]
+    data = [bar_min, bar_avg, bar_max]
     
     plotly.offline.plot({
         "data": data,
@@ -84,17 +94,29 @@ def main():
         x.append(timestamp)
         y.append(temp)
         y2.append(humid)
-    plt.figure(figsize=(16,10))
-    plt.plot(x, y, color='green')
-    plt.plot(x, y2, color='orange')
-    plt.axhline(y=20, color='r', linestyle='--')
-    plt.xlabel('Date')
-    plt.ylabel('Range')
+
+    fig, ax1 = plt.subplots(figsize=(16,10))
+    ax1.plot(x, y, color='green')
+    ax1.axhline(y=20, color='green', linestyle=':')
+    ax1.axhline(y=50, color='green', linestyle=':')
+    ax1.set_xlabel('Datetime')
+    # Make the y-axis label, ticks and tick labels match the line color.
+    ax1.set_ylabel('Temperature (*C)', color='green')
+    ax1.tick_params('y', colors='green')
+    
+    ax2 = ax1.twinx()
+    ax2.plot(x, y2, color='orange')
+    ax1.axhline(y=30, color='orange', linestyle='--')
+    ax1.axhline(y=60, color='orange', linestyle='--')
+    ax2.set_ylabel('Humidity (%)', color='orange')
+    ax2.tick_params('y', colors='orange')
+    
     plt.title('Line Graph')
-    plt.legend(['Temperature', 'Humidity', 'Set Point'], loc='upper left')
+    
+    fig.tight_layout()
     plt.show()
     plt.savefig('linegraph.png')
-
+    
     # Clear all object
     del database
 
