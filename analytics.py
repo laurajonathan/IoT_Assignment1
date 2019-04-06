@@ -11,16 +11,55 @@ import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from monitorAndNotify import Database
 
-
-
-class Analytics:
+class Graph:
     """
-    Analytics Class
+    Generate graph Class
+    """
+    def __init__(self):
+        pass
+
+    def generate_graph(self):
+        pass
+
+class LineGraph(Graph):
+    """
+    LineGraph Class
     """
 
     def __init__(self):
         pass
 
+    def generate_graph(self, x, y, y2):
+        fig, ax1 = plt.subplots(figsize=(16,10))
+        ax1.plot(x, y, color='green')
+        ax1.axhline(y=20, color='green', linestyle=':')
+        ax1.axhline(y=50, color='green', linestyle=':')
+        ax1.set_xlabel('Datetime')
+        # Make the y-axis label, ticks and tick labels match the line color.
+        ax1.set_ylabel('Temperature (*C)', color='green')
+        ax1.tick_params('y', colors='green')
+        
+        ax2 = ax1.twinx()
+        ax2.plot(x, y2, color='orange')
+        ax1.axhline(y=30, color='orange', linestyle='--')
+        ax1.axhline(y=60, color='orange', linestyle='--')
+        ax2.set_ylabel('Humidity (%)', color='orange')
+        ax2.tick_params('y', colors='orange')
+        
+        plt.title('Line Graph')
+        
+        fig.tight_layout()
+        plt.show()
+        plt.savefig('linegraph.png')
+    
+class BarGraph(Graph):
+    """
+    BarGraph Class
+    """
+
+    def __init__(self):
+        pass
+    
 
 def main():
     """
@@ -52,7 +91,7 @@ def main():
         y_min.append(value_min)
         y_max.append(value_max)
     
-    plotly.offline.init_notebook_mode(connected=True)
+    #plotly.offline.init_notebook_mode(connected=True)
 
     bar_min = go.Bar(
         x=x,
@@ -95,27 +134,8 @@ def main():
         y.append(temp)
         y2.append(humid)
 
-    fig, ax1 = plt.subplots(figsize=(16,10))
-    ax1.plot(x, y, color='green')
-    ax1.axhline(y=20, color='green', linestyle=':')
-    ax1.axhline(y=50, color='green', linestyle=':')
-    ax1.set_xlabel('Datetime')
-    # Make the y-axis label, ticks and tick labels match the line color.
-    ax1.set_ylabel('Temperature (*C)', color='green')
-    ax1.tick_params('y', colors='green')
-    
-    ax2 = ax1.twinx()
-    ax2.plot(x, y2, color='orange')
-    ax1.axhline(y=30, color='orange', linestyle='--')
-    ax1.axhline(y=60, color='orange', linestyle='--')
-    ax2.set_ylabel('Humidity (%)', color='orange')
-    ax2.tick_params('y', colors='orange')
-    
-    plt.title('Line Graph')
-    
-    fig.tight_layout()
-    plt.show()
-    plt.savefig('linegraph.png')
+    line_graph = LineGraph()
+    line_graph.generate_graph(x,y,y2)
     
     # Clear all object
     del database
