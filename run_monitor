@@ -1,0 +1,2 @@
+* * * * * pi /home/pi/IoT_Assignment1/run_monitor.sh
+@reboot pi /home/pi/IoT_Assignment1/run_monitor.sh
