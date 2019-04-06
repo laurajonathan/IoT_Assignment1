@@ -98,6 +98,5 @@ def main():
     # Clear all object
     del database
 
-
 if __name__ == "__main__":
     main()
