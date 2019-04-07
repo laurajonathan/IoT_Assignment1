@@ -35,9 +35,14 @@ This project is built by following [PEP 8](https://www.python.org/dev/peps/pep-0
 pylint3 python_file.py
 ```
 
-## Deployment
+## Structure
 
-Add additional notes about how to deploy this on a live system
+This project consists of 5 modules
+* monitor_and_notify.py
+* create_report.py
+* bluetooth_local.py
+* analytics.py
+* virtual_sense_hat.py
 
 ## IDE tools
 
