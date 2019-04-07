@@ -258,6 +258,7 @@ def main():
     line_graph.generate_graph()
 
     # Clear all object
+    del data
     del database
     del bar_graph
     del line_graph

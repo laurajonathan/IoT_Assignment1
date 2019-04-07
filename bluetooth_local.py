@@ -118,6 +118,7 @@ def main():
     del bluetooth
     del data
     del notification
+    del report
 
 
 if __name__ == "__main__":
