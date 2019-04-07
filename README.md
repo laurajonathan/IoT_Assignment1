@@ -21,7 +21,7 @@ Pylint3
 The external API included
 ```
 PushBullet
-Plotly (If run the online plot)
+Plotly (For the online plot but not included in this project)
 ```
 
 ### Installing
