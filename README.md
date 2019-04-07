@@ -43,8 +43,6 @@ pylint3 python_file.py
 
 ## Structure
 
-Project structure
-
 ### Python modules
 
 This project consists of 5 python modules
@@ -55,15 +53,14 @@ This project consists of 5 python modules
 * virtual_sense_hat.py
 
 ### Cron Job
-
-This project has 2 bash script
-* run_monitor.sh
-* run_bluetooth.sh
 The cron job will run the script with the setting in /etc/cron.d/IoT_Assignment1
 ```
 * * * * * pi /path_to_script/run_monitor.sh
 @reboot pi /path_to_script/run_bluetooth.sh
 ```
+This project has 2 bash script
+* run_monitor.sh
+* run_bluetooth.sh
 
 ## IDE tools
 
