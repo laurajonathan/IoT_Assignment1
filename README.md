@@ -28,7 +28,7 @@ pip3 install matplotlib plotly pybluez
 
 ### Coding Style
 
-This project is built by following PEP 8 style and the linting tool used is pylint3
+This project is built by following [PEP 8](https://www.python.org/dev/peps/pep-0008/) style and the linting tool used is pylint3
 
 ```
 pylint3 python_file.py
