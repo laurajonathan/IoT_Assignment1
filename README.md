@@ -1,6 +1,6 @@
 # IoT_Assignment1
 
-This project is intended to read the data from the SenseHat sensor on Raspberry Pi 3 B. Including the basic monitor, report, bluetooth, notification and analytics modules.
+This project is intended to read the data from the SenseHat sensor on Raspberry Pi 3 B which will run automatically via cronjob. Including the basic monitor, report, bluetooth, notification and analytics modules.
 
 ## Getting Started
 
@@ -16,6 +16,12 @@ Matplotlib
 Plotly
 Pybluez
 Pylint3
+```
+
+The external API included
+```
+PushBullet
+Plotly (If run the online plot)
 ```
 
 ### Installing
@@ -37,13 +43,27 @@ pylint3 python_file.py
 
 ## Structure
 
-This project consists of 5 modules
+Project structure
+
+### Python modules
+
+This project consists of 5 python modules
 * monitor_and_notify.py
-  test
 * create_report.py
 * bluetooth_local.py
 * analytics.py
 * virtual_sense_hat.py
+
+### Cron Job
+
+This project has 2 bash script
+* run_monitor.sh
+* run_bluetooth.sh
+The cron job will run the script with the setting in /etc/cron.d/IoT_Assignment1
+```
+* * * * * pi /path_to_script/run_monitor.sh
+@reboot pi /path_to_script/run_bluetooth.sh
+```
 
 ## IDE tools
 
