@@ -39,6 +39,7 @@ pylint3 python_file.py
 
 This project consists of 5 modules
 * monitor_and_notify.py
+  test
 * create_report.py
 * bluetooth_local.py
 * analytics.py
