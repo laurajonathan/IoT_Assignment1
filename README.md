@@ -15,6 +15,7 @@ Python 3.5+
 Matplotlib
 Plotly
 Pybluez
+Pylint3
 ```
 
 ### Installing
@@ -23,7 +24,7 @@ Install the library and bluetooth modules using apt and pip3
 
 ```
 sudo apt install bluetooth bluez blueman bluez-tools
-pip3 install matplotlib plotly pybluez
+pip3 install matplotlib plotly pybluez pylint3
 ```
 
 ### Coding Style
