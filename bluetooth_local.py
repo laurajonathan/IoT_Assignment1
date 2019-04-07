@@ -1,5 +1,5 @@
 """
-bluetooth.py
+bluetooth_local.py
 
 Created by Suwat Tangtragoonviwatt (s3710374) and Laura Jonathan (s3696013)
 

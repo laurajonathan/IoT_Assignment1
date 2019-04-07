@@ -1,5 +1,5 @@
 """
-monitorAndNotify.py
+monitor_and_notify.py
 
 Created by Suwat Tangtragoonviwatt (s3710374) and Laura Jonathan (s3696013)
 
